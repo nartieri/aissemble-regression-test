@@ -1,0 +1,79 @@
+{
+    "name": "PysparkPipeline",
+    "package": "org.test",
+    "type": {
+        "name": "data-flow",
+        "implementation": "data-delivery-pyspark"
+    },
+    "dataLineage": true,
+    "fileStores": [        
+        {
+            "name": "s3TestModelOne"        
+        }    
+    ],  
+    "steps": [
+        {
+            "name": "Ingest",
+            "type": "asynchronous",
+            "inbound": {
+                "type": "messaging",
+                "channelName": "PysparkIngestChannel"
+            },
+            "outbound": {
+                "type": "messaging",
+                "channelName": "PysparkTransformChannel"
+            },
+            "persist": {
+                "type": "delta-lake"
+            },
+            "alerting": {
+                "enabled": false
+            },
+            "dataProfiling": {
+                "enabled": false
+            },
+            "provenance": {
+                "enabled": true
+            }
+        },
+        {
+            "name": "Transform",
+            "type": "synchronous",
+            "inbound": {
+                "type": "native",
+                "nativeCollectionType": {
+                    "name": "customCollection",
+                    "package": "simple.test.dictionary"
+                },
+                "recordType": {
+                    "name": "Person",
+                    "package": "simple.test.record"
+                }
+            },
+            "outbound": {
+                "type": "native",
+                "nativeCollectionType": {
+                    "name": "customCollection",
+                    "package": "simple.test.dictionary"
+                },
+                "recordType": {
+                    "name": "Person",
+                    "package": "simple.test.record"
+                }
+            },
+            "persist": {
+                "type": "hive"
+            },
+            "alerting": {
+                "enabled": false
+            },
+            "dataProfiling": {
+                "enabled": false
+            },
+            "provenance": {
+                "enabled": true
+            },
+            "fileStores": ["s3TestModelOne"]
+        }
+    ]
+}

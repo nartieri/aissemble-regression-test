@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.test</groupId>
+        <artifactId>regression-test-shared</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <!-- Generated from: templates/data-delivery-data-records/data-delivery-combined-data-records-python.pom.xml.vm -->
+
+    <artifactId>regression-test-data-records-python</artifactId>
+    <packaging>habushu</packaging>
+
+    <name>regressionTestProject::Shared::Pyspark Data Records</name>
+    <description>PySpark data records</description>
+
+    <build>
+        <directory>dist</directory>
+        <plugins>
+            <plugin>
+                <groupId>org.technologybrewery.fermenter</groupId>
+                <artifactId>fermenter-mda</artifactId>
+                <configuration>
+                    <basePackage>regression_test_data_records_python</basePackage>
+                    <profile>data-delivery-combined-data-records-python</profile>
+                    <propertyVariables>
+                        <behaveFeature>data_records</behaveFeature>
+                    </propertyVariables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-python-sources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>generate-sources</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>clean-unmodifiable-generated-python-sources</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <generatedBasedir>${project.basedir}/src/regression_test_data_records_python/generated</generatedBasedir>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.technologybrewery.habushu</groupId>
+                <artifactId>habushu-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>net.masterthought</groupId>
+                <artifactId>maven-cucumber-reporting</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.masterthought</groupId>
+            <artifactId>cucumber-reporting</artifactId>
+        </dependency>
+    </dependencies>
+</project>
