@@ -73,13 +73,13 @@ public class SparkPipelineDriver extends SparkPipelineBaseDriver {
       try {
         person.validate();
       } catch (Exception e) {
-        System.out.println("Person: " + person.getName() + "; error: " + e.getMessage());
+        logger.info("Person: " + person.getName() + "; error: " + e.getMessage());
       }
       input.add(person);
     }
 
     final Transform transform = CDI.current().select(Transform.class, new Any.Literal()).get();
-    Set<Person> transformResult = transform.executeStep(null);
+    Set<Person> transformResult = transform.executeStep(input);
     PipelineBase.getInstance().recordPipelineLineageCompleteEvent();
   }
 }

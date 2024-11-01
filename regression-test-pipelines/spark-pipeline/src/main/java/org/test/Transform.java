@@ -95,10 +95,10 @@ public class Transform extends TransformBase {
 
         try {
             logger.info("Pushing file to S3 Local");
-            pushFileToS3(); // Pushes file to FileStore (LocalStack S3)
+            pushFileToS3();
 
             logger.info("Fetching file from S3 Local");
-            fetchFileFromS3Local(); // Fetches file from FileStore (LocalStack S3)
+            fetchFileFromS3Local();
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Implement executeStepImpl(..) or remove this pipeline step!");
@@ -108,31 +108,25 @@ public class Transform extends TransformBase {
     }
 
     protected void pushFileToS3() {
-        // Bucket name
-        String container = "test-filestore-bucket";
-        String location = "testFileStore.txt";
-        Path localPath = Paths.get("src/main/resources/files/testFileStore.txt");
+        String bucket = "test-filestore-bucket";
+        String fileToUpload = "push_testFileStore.txt";
+        Path localPathToFile = Paths.get("/opt/spark/work-dir/" + fileToUpload);
 
         try {
-            this.s3TestModelOneStore.store(container,location, localPath); // Pushed file to FileStore (LocalStack S3)
+            Files.writeString(localPathToFile, "test txt file"); // Create the test file to push
+            this.s3TestModelOneStore.store(bucket, fileToUpload, localPathToFile); // Push file to FileStore (LocalStack S3)
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 	protected void fetchFileFromS3Local() throws IOException  {
-        String container = "test-filestore-bucket";
-        String location = "testFileStore.txt";
-        Path localPath = Paths.get("/opt/spark/work-dir/fetch_TestFileStore.txt");
+        String bucket = "test-filestore-bucket";
+        String fileToFetch = "push_testFileStore.txt";
+        Path localPathToSaveFile = Paths.get("/opt/spark/work-dir/fetch_TestFileStore.txt");
 
-        createDirectoryIfNotExists(localPath.getParent()); // Ensure the directory exists or create it
-        this.s3TestModelOneStore.fetch(container, location, localPath); // Fetches file from FileStore (LocalStack S3)
-    }
-
-    protected static void createDirectoryIfNotExists(Path directoryPath) throws IOException {
-        if (!Files.exists(directoryPath)) {
-            Files.createDirectories(directoryPath);
-        }
+        this.s3TestModelOneStore.fetch(bucket, fileToFetch, localPathToSaveFile); // Fetches file from FileStore (LocalStack S3)
+        logger.info("Fetched file with contents: {}", Files.readAllLines(localPathToSaveFile).get(0));
     }
 
     @Override
