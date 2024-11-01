@@ -27,20 +27,12 @@ import java.util.Map;
 
 import com.boozallen.aissemble.core.metadata.MetadataModel;
 
-import java.util.Set;
-import simple.test.record.Person;
-import simple.test.record.PersonSchema;
-import com.boozallen.aissemble.data.encryption.policy.config.EncryptAlgorithm;
-import org.apache.spark.sql.types.DataTypes;
-
-import jakarta.inject.Inject;
-import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.stream.Collectors;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
@@ -48,13 +40,10 @@ import com.boozallen.aissemble.data.encryption.policy.EncryptionPolicy;
 import com.boozallen.aissemble.data.encryption.policy.EncryptionPolicyManager;
 import com.boozallen.aissemble.data.encryption.AiopsEncrypt;
 import com.boozallen.aissemble.data.encryption.SimpleAesEncrypt;
-import com.boozallen.aissemble.data.encryption.VaultEncrypt;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.functions;
-import org.apache.spark.sql.types.StructType;
 
-import org.apache.spark.sql.api.java.UDF1;
 import org.apache.spark.sql.api.java.UDF2;
 
 import static org.apache.spark.sql.functions.col;
@@ -104,7 +93,46 @@ public class Transform extends TransformBase {
 
         logger.info("Completed saving People");
 
+        try {
+            logger.info("Pushing file to S3 Local");
+            pushFileToS3(); // Pushes file to FileStore (LocalStack S3)
+
+            logger.info("Fetching file from S3 Local");
+            fetchFileFromS3Local(); // Fetches file from FileStore (LocalStack S3)
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Implement executeStepImpl(..) or remove this pipeline step!");
+        }
+
         return null;
+    }
+
+    protected void pushFileToS3() {
+        // Bucket name
+        String container = "test-filestore-bucket";
+        String location = "testFileStore.txt";
+        Path localPath = Paths.get("src/main/resources/files/testFileStore.txt");
+
+        try {
+            this.s3TestModelOneStore.store(container,location, localPath); // Pushed file to FileStore (LocalStack S3)
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+	protected void fetchFileFromS3Local() throws IOException  {
+        String container = "test-filestore-bucket";
+        String location = "testFileStore.txt";
+        Path localPath = Paths.get("/opt/spark/work-dir/fetch_TestFileStore.txt");
+
+        createDirectoryIfNotExists(localPath.getParent()); // Ensure the directory exists or create it
+        this.s3TestModelOneStore.fetch(container, location, localPath); // Fetches file from FileStore (LocalStack S3)
+    }
+
+    protected static void createDirectoryIfNotExists(Path directoryPath) throws IOException {
+        if (!Files.exists(directoryPath)) {
+            Files.createDirectories(directoryPath);
+        }
     }
 
     @Override
@@ -132,10 +160,10 @@ public class Transform extends TransformBase {
                         PersonSchema schema = new PersonSchema();
                         Dataset<Row> ds = sparkSession.createDataFrame(rows, schema.getStructType());
 
-                        System.out.println("=============== before validation ===================");
+                        logger.info("=============== before validation ===================");
                         ds.show(false);
 
-                        System.out.println("=============== after validation ===================");
+                        logger.info("=============== after validation ===================");
                         ds = schema.validateDataFrame(ds);
                         ds.show(false);
                         List<String> datasetFields = Arrays.asList(ds.columns());
@@ -150,14 +178,14 @@ public class Transform extends TransformBase {
                             ds = ds.withColumn(encryptField,
                                     functions.callUDF( "encryptUDF", col(encryptField), lit(encryptAlgorithm)));
                         }
-                        System.out.println("=============== after encryption ===================");
+                        logger.info("=============== after encryption ===================");
                         ds.show(false);
 
                         for(String encryptField: fieldIntersection) {
                             ds = ds.withColumn(encryptField,
                                     functions.callUDF( "decryptUDF", col(encryptField), lit(encryptAlgorithm)));
                         }
-                        System.out.println("=============== after decryption ===================");
+                        logger.info("=============== after decryption ===================");
                         ds.show(false);
                     }
                 }

@@ -199,6 +199,22 @@
                             </propertyVariables>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>vault</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-sources</goal>
+                        </goals>
+                        <configuration>
+                            <basePackage>com.test</basePackage>
+                            <profile>vault-deploy</profile>
+                            <!-- The property variables below are passed to the Generation Context and utilized
+                                    to customize the deployment artifacts. -->
+                            <propertyVariables>
+                                <appName>vault</appName>
+                            </propertyVariables>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>

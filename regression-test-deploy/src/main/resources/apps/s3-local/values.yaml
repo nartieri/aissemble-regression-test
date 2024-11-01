@@ -5,4 +5,10 @@
 #################################################################################
 
 aissemble-localstack-chart:
-  buckets: []
+  buckets:
+    - name: test-filestore-bucket
+      keys:
+      - /
+    - name: spark-infrastructure
+      keys:
+      - warehouse/

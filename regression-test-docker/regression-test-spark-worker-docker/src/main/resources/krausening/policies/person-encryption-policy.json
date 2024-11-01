@@ -1,0 +1,18 @@
+[
+  {
+    "identifier": "encryptSSN",
+    "rules": [
+      {
+        "className": "EncryptRule",
+        "configurations": {
+          "description": "Apply encryption policy"
+        }
+      }
+    ],
+    "encryptPhase": "EncryptDataTest",
+    "encryptFields": [
+      "ssn"
+    ],
+    "encryptAlgorithm": "AES_ENCRYPT"
+  }
+]

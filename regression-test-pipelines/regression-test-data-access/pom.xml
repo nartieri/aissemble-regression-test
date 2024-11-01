@@ -103,6 +103,13 @@
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <!-- Spark hasn't migrated to Jakarta packages yet. Will need to shade it if we want to fully migrate. -->
+            <!-- See https://github.com/apache/incubator-hugegraph-toolchain/issues/464 -->
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${version.javax.servlet}</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -1,5 +1,7 @@
 package org.test;
 
+import java.io.IOException;
+
 /*-
  * #%L
  * regressionTestProject::Pipelines::Spark Pipeline
@@ -14,7 +16,6 @@ package org.test;
  */
 
 import java.lang.String;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 
 import java.util.ArrayList;
@@ -93,7 +94,6 @@ public class Ingest extends IngestBase {
 		CompletionStage<String> cs = CompletableFuture.completedFuture(null);
 		return cs.thenApply(inbound::withPayload);
 	}
-
 
 	/**
 	 * {@inheritDoc}

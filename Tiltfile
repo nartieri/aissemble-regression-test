@@ -115,3 +115,11 @@ yaml = helm(
        'regression-test-deploy/src/main/resources/apps/pipeline-invocation-service/values-dev.yaml']
 )
 k8s_yaml(yaml)
+
+yaml = helm(
+   'regression-test-deploy/src/main/resources/apps/vault',
+   name='vault',
+   values=['regression-test-deploy/src/main/resources/apps/vault/values.yaml',
+       'regression-test-deploy/src/main/resources/apps/vault/values-dev.yaml']
+)
+k8s_yaml(yaml)
