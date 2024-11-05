@@ -5,10 +5,40 @@
         "name": "data-flow",
         "implementation": "data-delivery-spark"
     },
+    "fileStores": [        
+        {  
+            "name": "s3TestFile"        
+        }    
+    ], 
     "dataLineage": true,
     "steps": [
         {
-            "name": "SyncSparkStep",
+            "name": "Ingest",
+            "type": "synchronous",
+            "inbound": {
+                "type": "messaging",
+                "channelName": "AsyncSparkInboundChannel"
+            },
+            "outbound": {
+                "type": "messaging",
+                "channelName": "AsyncSparkOutboundChannel"
+            },
+            "persist": {
+                "type": "delta-lake"
+            },
+            "alerting": {
+                "enabled": false
+            },
+            "dataProfiling": {
+                "enabled": false
+            },
+            "provenance": {
+                "enabled": true
+            },
+            "fileStores": ["s3TestFile"]
+        },
+        {
+            "name": "Transform",
             "type": "synchronous",
             "inbound": {
                 "type": "native",

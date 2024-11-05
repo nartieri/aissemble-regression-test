@@ -17,9 +17,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>async-spark-pipeline</module>
-        <module>sync-spark-pipeline</module>
-        <module>pyspark-pipeline</module>
         <module>regression-test-data-access</module>
     </modules>
 

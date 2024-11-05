@@ -43,17 +43,6 @@ docker_build(
     dockerfile='regression-test-docker/regression-test-policy-decision-point-docker/src/main/resources/docker/Dockerfile'
 )
 
-# pyspark-pipeline-compiler
-local_resource(
-    name='compile-pyspark-pipeline',
-    cmd='cd regression-test-pipelines/pyspark-pipeline && poetry run behave tests/features && poetry build && cd - && \
-    cp -r regression-test-pipelines/pyspark-pipeline/dist/* regression-test-docker/regression-test-spark-worker-docker/target/dockerbuild/pyspark-pipeline && \
-    cp regression-test-pipelines/pyspark-pipeline/dist/requirements.txt regression-test-docker/regression-test-spark-worker-docker/target/dockerbuild/requirements/pyspark-pipeline',
-    deps=['regression-test-pipelines/pyspark-pipeline'],
-    auto_init=False,
-    ignore=['**/dist/']
-)
-
 yaml = helm(
    'regression-test-deploy/src/main/resources/apps/policy-decision-point',
    name='policy-decision-point',
@@ -69,9 +58,6 @@ yaml = helm(
 )
 k8s_yaml(yaml)
 
-yaml = local('helm template oci://ghcr.io/boozallen/aissemble-spark-application-chart --version %s --values regression-test-pipelines/pyspark-pipeline/src/pyspark_pipeline/resources/apps/pyspark-pipeline-base-values.yaml,regression-test-pipelines/pyspark-pipeline/src/pyspark_pipeline/resources/apps/pyspark-pipeline-dev-values.yaml' % aissemble_version)
-k8s_yaml(yaml)
-k8s_resource('pyspark-pipeline', port_forwards=[port_forward(4747, 4747, 'debug')], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
 yaml = helm(
    'regression-test-deploy/src/main/resources/apps/spark-infrastructure',
    name='spark-infrastructure',
@@ -111,11 +97,3 @@ yaml = helm(
        'regression-test-deploy/src/main/resources/apps/pipeline-invocation-service/values-dev.yaml']
 )
 k8s_yaml(yaml)
-
-yaml = local('helm template oci://ghcr.io/boozallen/aissemble-spark-application-chart --version %s --values regression-test-pipelines/sync-spark-pipeline/src/main/resources/apps/sync-spark-pipeline-base-values.yaml,regression-test-pipelines/sync-spark-pipeline/src/main/resources/apps/sync-spark-pipeline-dev-values.yaml' % aissemble_version)
-k8s_yaml(yaml)
-k8s_resource('sync-spark-pipeline', port_forwards=[port_forward(4747, 4747, 'debug')], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
-
-yaml = local('helm template oci://ghcr.io/boozallen/aissemble-spark-application-chart --version %s --values regression-test-pipelines/async-spark-pipeline/src/main/resources/apps/async-spark-pipeline-base-values.yaml,regression-test-pipelines/async-spark-pipeline/src/main/resources/apps/async-spark-pipeline-dev-values.yaml' % aissemble_version)
-k8s_yaml(yaml)
-k8s_resource('async-spark-pipeline', port_forwards=[port_forward(4747, 4747, 'debug')], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
