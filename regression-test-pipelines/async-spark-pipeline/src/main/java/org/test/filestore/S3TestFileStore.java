@@ -16,7 +16,7 @@ package org.test.filestore;
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * Utility for accessing the s3TestFileStore file storage. To customize
+ * Utility for accessing the s3TestFile file storage. To customize
  * the file store connection modify the environment variables as per the documentation at
  * https://boozallen.github.io/aissemble/aissemble/current/pipeline-metamodel.html
  * Please **DO** modify with your customizations, as appropriate.
@@ -24,8 +24,8 @@ import jakarta.enterprise.context.ApplicationScoped;
  * Originally generated from: templates/file-store/file.store.impl.java.vm
  */
 @ApplicationScoped
-public class S3TestFileStoreStore extends S3TestFileStoreStoreBase {
-	public S3TestFileStoreStore() {
-		super("s3TestFileStore");
+public class S3TestFileStore extends S3TestFileStoreBase {
+	public S3TestFileStore() {
+		super("s3TestFile");
 	}
 }

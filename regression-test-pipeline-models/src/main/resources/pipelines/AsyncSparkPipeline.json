@@ -8,7 +8,7 @@
     "dataLineage": true,
     "fileStores": [        
         {
-            "name": "s3TestFileStore"        
+            "name": "s3TestFile"        
         }    
     ],  
     "steps": [
@@ -35,7 +35,7 @@
             "provenance": {
                 "enabled": true
             },
-            "fileStores": ["s3TestFileStore"]
+            "fileStores": ["s3TestFile"]
         }
     ]
 }

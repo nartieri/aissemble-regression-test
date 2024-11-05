@@ -13,19 +13,40 @@ package org.test;
  * #L%
  */
 
-import java.util.Set;
-import simple.test.record.Person;
-import simple.test.record.PersonSchema;
-
-import jakarta.enterprise.context.ApplicationScoped;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.time.Instant;
-import java.util.Map;
-
-import com.boozallen.aissemble.core.metadata.MetadataModel;
+ import java.util.Set;
+ import simple.test.record.Person;
+ import simple.test.record.PersonSchema;
+ 
+ import jakarta.enterprise.context.ApplicationScoped;
+ 
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+ import java.time.Instant;
+ import java.util.Map;
+ 
+ import com.boozallen.aissemble.core.metadata.MetadataModel;
+ 
+ import java.util.List;
+ import java.util.Arrays;
+ import java.util.stream.Collectors;
+ import java.nio.file.Files;
+ import java.nio.file.Paths;
+ 
+ 
+ import com.boozallen.aissemble.data.encryption.policy.EncryptionPolicy;
+ import com.boozallen.aissemble.data.encryption.policy.EncryptionPolicyManager;
+ import com.boozallen.aissemble.data.encryption.AiopsEncrypt;
+ import com.boozallen.aissemble.data.encryption.SimpleAesEncrypt;
+ import org.apache.spark.sql.Dataset;
+ import org.apache.spark.sql.Row;
+ import org.apache.spark.sql.functions;
+ 
+ import org.apache.spark.sql.api.java.UDF2;
+ import org.apache.spark.sql.types.DataTypes;
+ 
+ import static org.apache.spark.sql.functions.col;
+ import static org.apache.spark.sql.functions.lit;
 
 /**
  * Performs the business logic for SyncSparkStep.
@@ -62,7 +83,14 @@ public class SyncSparkStep extends SyncSparkStepBase {
     @Override
     protected Set<Person> executeStepImpl(Set<Person> inbound) {
         // TODO: Add your business logic here for this step!
-        logger.error("Implement executeStepImpl(..) or remove this pipeline step!");
+        logger.info("Saving People");
+
+        PersonSchema personSchema = new PersonSchema();
+        List<Row> rows = inbound.stream().map(PersonSchema::asRow).collect(Collectors.toList());
+        Dataset<Row> dataset = sparkSession.createDataFrame(rows, personSchema.getStructType());
+        saveDataset(dataset, "People");
+
+        logger.info("Completed saving People");
 
         return null;
     }
@@ -75,5 +103,73 @@ public class SyncSparkStep extends SyncSparkStepBase {
     protected MetadataModel createProvenanceMetadata(String resource,String subject,String action){
         // TODO: Add any additional provenance-related metadata here
         return new MetadataModel(resource,subject,action,Instant.now());
+    }
+
+    @Override
+    protected Set<Person> checkAndApplyEncryptionPolicy(Set<Person> inbound) {
+        // Check Encryption Policy
+        Set<Person> datasetWithEncryptionPolicyApplied = inbound;
+        EncryptionPolicyManager encryptionPolicyManager = EncryptionPolicyManager.getInstance();
+        String filePath = encryptionPolicyManager.getPoliciesLocation();
+
+        if(Files.isDirectory(Paths.get(filePath))) {
+            Map<String, EncryptionPolicy> policies = encryptionPolicyManager.getEncryptPolicies();
+
+            if(!policies.isEmpty()) {
+                for(EncryptionPolicy encryptionPolicy: policies.values()) {
+                    if(stepPhase.equalsIgnoreCase(encryptionPolicy.getEncryptPhase())){
+                        List<String> encryptFields = encryptionPolicy.getEncryptFields();
+                        List<Row> rows = datasetWithEncryptionPolicyApplied.stream()
+                                .map(PersonSchema::asRow)
+                                .collect(Collectors.toList());
+                        PersonSchema schema = new PersonSchema();
+                        Dataset<Row> ds = sparkSession.createDataFrame(rows, schema.getStructType());
+
+                        logger.info("=============== before validation ===================");
+                        ds.show(false);
+
+                        logger.info("=============== after validation ===================");
+                        ds = schema.validateDataFrame(ds);
+                        ds.show(false);
+                        List<String> datasetFields = Arrays.asList(ds.columns());
+                        List<String> fieldIntersection = encryptFields.stream()
+                                .filter(datasetFields::contains)
+                                .collect(Collectors.toList());
+
+                        // Registered UDF calls prefer String over Enum
+                        String encryptAlgorithm = encryptionPolicy.getEncryptAlgorithm().toString();
+
+                        for(String encryptField: fieldIntersection) {
+                            ds = ds.withColumn(encryptField,
+                                    functions.callUDF( "encryptUDF", col(encryptField), lit(encryptAlgorithm)));
+                        }
+                        logger.info("=============== after encryption ===================");
+                        ds.show(false);
+
+                        sparkSession.sqlContext().udf().register("decryptUDF", decryptUDF(), DataTypes.StringType);
+                        for(String encryptField: fieldIntersection) {
+                            ds = ds.withColumn(encryptField,
+                                    functions.callUDF( "decryptUDF", col(encryptField), lit(encryptAlgorithm)));
+                        }
+                        logger.info("=============== after decryption ===================");
+                        ds.show(false);
+                    }
+                }
+            }
+        }
+        return datasetWithEncryptionPolicyApplied;
+    }
+
+    protected UDF2<String, String, String> decryptUDF () {
+        return (plainText, encryptAlgorithm) -> {
+            if (plainText != null) {
+                // Default algorithm is AES
+                AiopsEncrypt aiopsEncrypt = new SimpleAesEncrypt();
+
+                return aiopsEncrypt.decryptValue(plainText);
+            } else {
+                return "";
+            }
+        };
     }
 }

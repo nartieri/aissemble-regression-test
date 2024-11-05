@@ -31,7 +31,17 @@ import java.util.concurrent.CompletionStage;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
 
+import simple.test.record.Person;
+import simple.test.record.PersonSchema;
 
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+
+import java.util.stream.Stream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOException;
 import java.time.Instant;
 
 import com.boozallen.aissemble.core.metadata.MetadataModel;
@@ -79,8 +89,29 @@ public class AsyncSparkStep extends AsyncSparkStepBase {
 			compatible implementation. See https://smallrye.io/smallrye-reactive-messaging/smallrye-reactive-messaging/2/model/model.html
 			for additional details
 		 */
-		// TODO add processing logic here
-		CompletionStage<String> cs = CompletableFuture.completedFuture(null);
+		logger.info("Message received: {}", inbound.getPayload());
+
+		logger.info("Saving Person");
+		Person person = new Person();
+		person.setName("Test Person");
+		PersonSchema personSchema = new PersonSchema();
+		List<Row> rows = Stream.of(person).map(PersonSchema::asRow).collect(Collectors.toList());
+		Dataset<Row> dataset = sparkSession.createDataFrame(rows, personSchema.getStructType());
+		saveDataset(dataset, "SparkPerson");
+		logger.info("Completed saving Person");
+
+		try {
+            logger.info("Pushing file to S3 Local");
+            pushFileToS3();
+
+            logger.info("Fetching file from S3 Local");
+            fetchFileFromS3Local();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Failed to push file to S3 Local");
+        }
+
+		CompletionStage<String> cs = CompletableFuture.completedFuture("OutboundMessage");
 		return cs.thenApply(inbound::withPayload);
 	}
 
@@ -93,4 +124,26 @@ public class AsyncSparkStep extends AsyncSparkStepBase {
 		// TODO: Add any additional provenance-related metadata here
 		return new MetadataModel(resource, subject, action, Instant.now());
 	}
+
+	protected void pushFileToS3() {
+        String bucket = "test-filestore-bucket";
+        String fileToUpload = "push_testFileStore.txt";
+        Path localPathToFile = Paths.get("/opt/spark/work-dir/" + fileToUpload);
+
+        try {
+            Files.writeString(localPathToFile, "test txt file"); // Create the test file to push
+            this.s3TestFileStore.store(bucket, fileToUpload, localPathToFile); // Push file to FileStore (LocalStack S3)
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+	protected void fetchFileFromS3Local() throws IOException  {
+        String bucket = "test-filestore-bucket";
+        String fileToFetch = "push_testFileStore.txt";
+        Path localPathToSaveFile = Paths.get("/opt/spark/work-dir/fetch_TestFileStore.txt");
+
+        this.s3TestFileStore.fetch(bucket, fileToFetch, localPathToSaveFile); // Fetches file from FileStore (LocalStack S3)
+        logger.info("Fetched file with contents: {}", Files.readAllLines(localPathToSaveFile).get(0));
+    }
 }
