@@ -139,13 +139,13 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "aissemble-extensions-data-delivery-spark-py"
-version = "1.10.0rc1"
+version = "1.10.0rc2"
 description = "Contains the core Python functionality of data delivery for Spark"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "aissemble_extensions_data_delivery_spark_py-1.10.0rc1-py3-none-any.whl", hash = "sha256:f0f1d66843617212bbbec7d013ca3c5377b519fd72e67dda2b0b69d31f846e7c"},
-    {file = "aissemble_extensions_data_delivery_spark_py-1.10.0rc1.tar.gz", hash = "sha256:3e5541a2a65984ffb6c0b34bdf09ce096866a11c4ae4960ba9a3bccf1c3ba84d"},
+    {file = "aissemble_extensions_data_delivery_spark_py-1.10.0rc2-py3-none-any.whl", hash = "sha256:fc8d1e66bfde92fd7d04a89d3c154047b112bb6e7f146e85f34b1a90631e982d"},
+    {file = "aissemble_extensions_data_delivery_spark_py-1.10.0rc2.tar.gz", hash = "sha256:954c11ddd1cc0077a831d75a94bb7ce90733746ae9da24e12fe149a7897119a7"},
 ]
 
 [package.dependencies]
@@ -155,13 +155,13 @@ pyyaml = ">=6.0,<7.0"
 
 [[package]]
 name = "aissemble-foundation-core-python"
-version = "1.10.0rc1"
+version = "1.10.0rc2"
 description = "Core classes for supporting concepts (alerting, metadata, etc) that are needed across most Python-based components"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "aissemble_foundation_core_python-1.10.0rc1-py3-none-any.whl", hash = "sha256:4d961ddeb84fe53f547acc86c68ed9c1a38cd56633f046075e6c20792880c0b6"},
-    {file = "aissemble_foundation_core_python-1.10.0rc1.tar.gz", hash = "sha256:c272346c09fa81e843d75a2e4cd593d0683187fda6e68f0d69da0b551f53b220"},
+    {file = "aissemble_foundation_core_python-1.10.0rc2-py3-none-any.whl", hash = "sha256:71eac4fc397106207168237f3ef928cc246ff97764481431b0a69a44c6b31526"},
+    {file = "aissemble_foundation_core_python-1.10.0rc2.tar.gz", hash = "sha256:fe3a71e15982827b7d6ee343eb3d4d4c98eb1417936ed56d67924c64036d1aa1"},
 ]
 
 [package.dependencies]

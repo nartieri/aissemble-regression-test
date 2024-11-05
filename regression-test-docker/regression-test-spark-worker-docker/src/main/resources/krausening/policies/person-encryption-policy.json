@@ -9,7 +9,7 @@
         }
       }
     ],
-    "encryptPhase": "EncryptDataTest",
+    "encryptPhase": "Transform",
     "encryptFields": [
       "ssn"
     ],

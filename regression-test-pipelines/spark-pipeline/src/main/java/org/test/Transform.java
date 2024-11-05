@@ -6,9 +6,9 @@ package org.test;
  * %%
  * Copyright (C) 2021 Booz Allen
  * %%
- * All Rights Reserved. You may not copy, reproduce, distribute, publish, display, 
- * execute, modify, create derivative works of, transmit, sell or offer for resale, 
- * or in any way exploit any part of this solution without Booz Allen Hamilton’s 
+ * All Rights Reserved. You may not copy, reproduce, distribute, publish, display,
+ * execute, modify, create derivative works of, transmit, sell or offer for resale,
+ * or in any way exploit any part of this solution without Booz Allen Hamilton's
  * express written permission.
  * #L%
  */
@@ -45,6 +45,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.functions;
 
 import org.apache.spark.sql.api.java.UDF2;
+import org.apache.spark.sql.types.DataTypes;
 
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.lit;
@@ -101,7 +102,7 @@ public class Transform extends TransformBase {
             fetchFileFromS3Local();
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("Implement executeStepImpl(..) or remove this pipeline step!");
+            logger.error("Failed to push file to S3 Local");
         }
 
         return null;
@@ -135,6 +136,7 @@ public class Transform extends TransformBase {
         return new MetadataModel(resource,subject,action,Instant.now());
     }
 
+    @Override
     protected Set<Person> checkAndApplyEncryptionPolicy(Set<Person> inbound) {
         // Check Encryption Policy
         Set<Person> datasetWithEncryptionPolicyApplied = inbound;
@@ -175,6 +177,7 @@ public class Transform extends TransformBase {
                         logger.info("=============== after encryption ===================");
                         ds.show(false);
 
+                        sparkSession.sqlContext().udf().register("decryptUDF", decryptUDF(), DataTypes.StringType);
                         for(String encryptField: fieldIntersection) {
                             ds = ds.withColumn(encryptField,
                                     functions.callUDF( "decryptUDF", col(encryptField), lit(encryptAlgorithm)));

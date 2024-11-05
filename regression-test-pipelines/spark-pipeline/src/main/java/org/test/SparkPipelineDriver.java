@@ -6,9 +6,9 @@ package org.test;
  * %%
  * Copyright (C) 2021 Booz Allen
  * %%
- * All Rights Reserved. You may not copy, reproduce, distribute, publish, display, 
- * execute, modify, create derivative works of, transmit, sell or offer for resale, 
- * or in any way exploit any part of this solution without Booz Allen Hamilton’s 
+ * All Rights Reserved. You may not copy, reproduce, distribute, publish, display,
+ * execute, modify, create derivative works of, transmit, sell or offer for resale,
+ * or in any way exploit any part of this solution without Booz Allen Hamilton's
  * express written permission.
  * #L%
  */
@@ -77,6 +77,21 @@ public class SparkPipelineDriver extends SparkPipelineBaseDriver {
       }
       input.add(person);
     }
+
+    // Make sure we have at least one valid person
+    person = new Person();
+    person.setEmployment("Student");
+    person.setName("John Smith");
+    person.setSsn("111-222-0000");
+    person.setAge(new AgeType(10));
+    person.setStringLength5To12(new StringWithValidation("abc123xyz"));
+    person.setLong2000To3000(new LongWithValidation(2000 + rd.nextLong(1000)));
+    person.setShort100To200(new ShortWithValidation(Short.valueOf("170", 10)));
+    BigDecimal bigDecimal = new BigDecimal(10 + rd.nextDouble(10));
+    person.setDecimal10To20(new DecimalWithValidation(bigDecimal.setScale(2, RoundingMode.HALF_UP)));
+    person.setDouble20To30(new DoubleWithValidation(20 + rd.nextDouble(10)));
+    person.setFloat30To40(new FloatWithValidation(30 + rd.nextFloat(10)));
+    input.add(person);
 
     final Transform transform = CDI.current().select(Transform.class, new Any.Literal()).get();
     Set<Person> transformResult = transform.executeStep(input);
