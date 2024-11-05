@@ -35,10 +35,6 @@ docker_build(
 )
 
 
-
-yaml = local('helm template oci://ghcr.io/boozallen/aissemble-spark-application-chart --version %s --values regression-test-pipelines/spark-pipeline/src/main/resources/apps/spark-pipeline-base-values.yaml,regression-test-pipelines/spark-pipeline/src/main/resources/apps/spark-pipeline-dev-values.yaml' % aissemble_version)
-k8s_yaml(yaml)
-k8s_resource('spark-pipeline', port_forwards=[port_forward(4747, 4747, 'debug')], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
 # policy-decision-point
 docker_build(
     ref='regression-test-policy-decision-point-docker',
@@ -113,13 +109,5 @@ yaml = helm(
    name='pipeline-invocation-service',
    values=['regression-test-deploy/src/main/resources/apps/pipeline-invocation-service/values.yaml',
        'regression-test-deploy/src/main/resources/apps/pipeline-invocation-service/values-dev.yaml']
-)
-k8s_yaml(yaml)
-
-yaml = helm(
-   'regression-test-deploy/src/main/resources/apps/vault',
-   name='vault',
-   values=['regression-test-deploy/src/main/resources/apps/vault/values.yaml',
-       'regression-test-deploy/src/main/resources/apps/vault/values-dev.yaml']
 )
 k8s_yaml(yaml)
