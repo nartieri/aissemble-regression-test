@@ -1,0 +1,49 @@
+{
+    "name": "SyncSparkPipeline",
+    "package": "org.test",
+    "type": {
+        "name": "data-flow",
+        "implementation": "data-delivery-spark"
+    },
+    "dataLineage": true,
+    "steps": [
+        {
+            "name": "SyncSparkStep",
+            "type": "synchronous",
+            "inbound": {
+                "type": "native",
+                "nativeCollectionType": {
+                    "name": "customCollection",
+                    "package": "simple.test.dictionary"
+                },
+                "recordType": {
+                    "name": "Person",
+                    "package": "simple.test.record"
+                }
+            },
+            "outbound": {
+                "type": "native",
+                "nativeCollectionType": {
+                    "name": "customCollection",
+                    "package": "simple.test.dictionary"
+                },
+                "recordType": {
+                    "name": "Person",
+                    "package": "simple.test.record"
+                }
+            },
+            "persist": {
+                "type": "hive"
+            },
+            "alerting": {
+                "enabled": false
+            },
+            "dataProfiling": {
+                "enabled": false
+            },
+            "provenance": {
+                "enabled": true
+            }
+        }
+    ]
+}

@@ -1,0 +1,41 @@
+{
+    "name": "AsyncSparkPipeline",
+    "package": "org.test",
+    "type": {
+        "name": "data-flow",
+        "implementation": "data-delivery-spark"
+    },
+    "dataLineage": true,
+    "fileStores": [        
+        {
+            "name": "s3TestFileStore"        
+        }    
+    ],  
+    "steps": [
+        {
+            "name": "AsyncSparkStep",
+            "type": "asynchronous",
+            "inbound": {
+                "type": "messaging",
+                "channelName": "AsyncSparkInboundChannel"
+            },
+            "outbound": {
+                "type": "messaging",
+                "channelName": "AsyncSparkOutboundChannel"
+            },
+            "persist": {
+                "type": "delta-lake"
+            },
+            "alerting": {
+                "enabled": false
+            },
+            "dataProfiling": {
+                "enabled": false
+            },
+            "provenance": {
+                "enabled": true
+            },
+            "fileStores": ["s3TestFileStore"]
+        }
+    ]
+}

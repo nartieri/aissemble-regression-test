@@ -9,7 +9,7 @@
         }
       }
     ],
-    "encryptPhase": "Transform",
+    "encryptPhase": "SyncSparkStep",
     "encryptFields": [
       "ssn"
     ],

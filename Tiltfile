@@ -111,3 +111,11 @@ yaml = helm(
        'regression-test-deploy/src/main/resources/apps/pipeline-invocation-service/values-dev.yaml']
 )
 k8s_yaml(yaml)
+
+yaml = local('helm template oci://ghcr.io/boozallen/aissemble-spark-application-chart --version %s --values regression-test-pipelines/sync-spark-pipeline/src/main/resources/apps/sync-spark-pipeline-base-values.yaml,regression-test-pipelines/sync-spark-pipeline/src/main/resources/apps/sync-spark-pipeline-dev-values.yaml' % aissemble_version)
+k8s_yaml(yaml)
+k8s_resource('sync-spark-pipeline', port_forwards=[port_forward(4747, 4747, 'debug')], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
+
+yaml = local('helm template oci://ghcr.io/boozallen/aissemble-spark-application-chart --version %s --values regression-test-pipelines/async-spark-pipeline/src/main/resources/apps/async-spark-pipeline-base-values.yaml,regression-test-pipelines/async-spark-pipeline/src/main/resources/apps/async-spark-pipeline-dev-values.yaml' % aissemble_version)
+k8s_yaml(yaml)
+k8s_resource('async-spark-pipeline', port_forwards=[port_forward(4747, 4747, 'debug')], auto_init=False, trigger_mode=TRIGGER_MODE_MANUAL)
